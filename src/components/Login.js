@@ -13,6 +13,7 @@ const Login = () => {
   const onUsernameSelection = () => {
     socket.auth = { username: nameInputRef.current.value };
     socket.connect();
+
     navigate("main");
   };
 

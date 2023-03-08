@@ -1,11 +1,44 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./game.module.css";
 import socket from "../../api/io";
+import { useLocation, useParams } from "react-router-dom";
 
 const Game = () => {
-  const [turn, setTurn] = useState("x");
   const [cells, setCells] = useState(Array(9).fill(""));
   const [winner, setWinner] = useState();
+  const params = useParams();
+  const gameRoom = params.game_id;
+  const sessionID = localStorage.getItem("sessionID");
+  const [turn, setTurn] = useState(gameRoom === socket.userID ? "x" : "o");
+  const [paused, setPaused] = useState(
+    gameRoom === socket.userID ? false : true
+  );
+  const [yourTurn, setYourTurn] = useState(
+    gameRoom === socket.userID ? true : false
+  );
+
+  useEffect(() => {
+    console.log("myID", socket.userID);
+
+    if (sessionID) {
+      console.log(sessionID, "sesId Ran");
+      socket.auth = { sessionID };
+      socket.connect();
+    }
+    console.log(gameRoom);
+    socket.on("turn_start", (newSquares) => {
+      console.log("newSquares", newSquares);
+      setCells(newSquares);
+      setYourTurn(true);
+      setPaused((prev) => !prev);
+      checkWinner(newSquares);
+    });
+
+    socket.on("play_again_trigger", () => {
+      setWinner(null);
+      setCells(Array(9).fill(""));
+    });
+  }, []);
 
   const checkWinner = (squares) => {
     let combos = {
@@ -47,6 +80,16 @@ const Game = () => {
     }
   };
 
+  // function switchTurn() {
+  //   if (turn === "x") {
+  //     setTurn("o");
+  //   }
+
+  //   if (turn === "o") {
+  //     setTurn("x");
+  //   }
+  // }
+
   const handleCellClick = (num) => {
     if (cells[num]) {
       alert("already clicked");
@@ -57,24 +100,34 @@ const Game = () => {
 
     if (turn === "x") {
       squares[num] = "x";
-      setTurn("o");
+      // setTurn("o");
     } else {
       squares[num] = "o";
-      setTurn("x");
+      // setTurn("x");
     }
     checkWinner(squares);
     setCells(squares);
-    console.log(squares);
+    // console.log(squares);
+    //send board and pause turn
+    // switch turn
+    socket.emit("turn_end", squares, gameRoom);
+    // switchTurn();
+    setYourTurn(false);
+    setPaused((prev) => !prev);
   };
 
   const playAgainHandler = () => {
     setWinner(null);
     setCells(Array(9).fill(""));
+    socket.emit("play_again_click", gameRoom);
   };
 
   const Cell = ({ num }) => {
     return (
-      <td onClick={() => handleCellClick(num)} className={styles.cell}>
+      <td
+        onClick={() => (paused ? null : handleCellClick(num))}
+        className={styles.cell}
+      >
         {cells[num]}
       </td>
     );
@@ -90,7 +143,8 @@ const Game = () => {
           </button>
         </div>
       )}
-      <h3>Turn: {turn}</h3>
+      <h3>{yourTurn ? "Your turn" : "Opponents turn"}</h3>
+      <h3>Place: {turn}</h3>
       <table>
         <tbody>
           <tr>

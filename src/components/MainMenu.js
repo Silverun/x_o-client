@@ -55,7 +55,7 @@ const MainMenu = () => {
     });
 
     socket.on("game_accepted", () => {
-      navigate("/game");
+      navigate(`/game/${socket.userID}`);
     });
 
     return () => {
@@ -63,12 +63,6 @@ const MainMenu = () => {
       socket.removeAllListeners();
     };
   }, []);
-
-  const exitLobbyHandler = () => {
-    socket.disconnect();
-    localStorage.clear();
-    navigate("/");
-  };
 
   const invitePlayerHandler = (id) => {
     console.log(id);
@@ -81,7 +75,7 @@ const MainMenu = () => {
 
   const acceptInviteHandler = () => {
     socket.emit("join_room", invitation.from);
-    navigate("/game");
+    navigate(`/game/${invitation.from}`);
   };
 
   return (
@@ -98,7 +92,6 @@ const MainMenu = () => {
         </Modal.Footer>
       </Modal>
 
-      <Button onClick={exitLobbyHandler}>Exit lobby</Button>
       <h3>{isConnected ? "Online" : "Offline"}</h3>
       <h3>Online Players</h3>
       <ListGroup>
