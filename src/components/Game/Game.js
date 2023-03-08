@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styles from "./game.module.css";
+import socket from "../../api/io";
 
 const Game = () => {
   const [turn, setTurn] = useState("x");

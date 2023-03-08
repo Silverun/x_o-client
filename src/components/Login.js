@@ -12,9 +12,7 @@ const Login = () => {
 
   const onUsernameSelection = () => {
     socket.auth = { username: nameInputRef.current.value };
-    console.log("socket.auth", socket.auth);
     socket.connect();
-    // localStorage.setItem("user", nameInputRef.current.value);
     navigate("main");
   };
 
