@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./game.module.css";
 import socket from "../../api/io";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 const Game = () => {
   const [cells, setCells] = useState(Array(9).fill(""));
@@ -19,9 +19,10 @@ const Game = () => {
     gameRoom === socket.userID ? true : false
   );
   const winRef = useRef(null);
+  const hostScreen = gameRoom === socket.userID;
+  const navigate = useNavigate();
 
   const newGame = useCallback(() => {
-    console.log("newGame ran");
     setCells(Array(9).fill(""));
     setWinner(null);
     setDraw(false);
@@ -126,17 +127,20 @@ const Game = () => {
   return (
     <div className="container-sm gap-2 d-flex flex-column flex-col align-items-center">
       {draw && (
-        <div>
+        <div className="container d-flex justify-content-center">
           <h3>Draw!</h3>
-          <button className="btn btn-secondary" onClick={playAgainHandler}>
+          <button className="btn ms-4 btn-secondary" onClick={playAgainHandler}>
             Play again
           </button>
         </div>
       )}
       {winner && (
-        <div>
-          <h3>{winner} is the winner!</h3>
-          <button className="btn btn-secondary" onClick={playAgainHandler}>
+        <div className="container d-flex justify-content-center">
+          <h3>
+            {winner === "o" && hostScreen ? "Opponent is" : "You are"} the
+            winner!
+          </h3>
+          <button className="btn ms-4 btn-secondary" onClick={playAgainHandler}>
             Play again
           </button>
         </div>
@@ -144,7 +148,7 @@ const Game = () => {
       {winner || draw ? null : (
         <>
           <h3>{yourTurn ? "Your turn" : "Opponent's turn"}</h3>
-          <h3>Playing as: {turn}</h3>
+          {yourTurn ? <h5>Place "{turn}"</h5> : <h5>Please wait</h5>}
         </>
       )}
       <table>
