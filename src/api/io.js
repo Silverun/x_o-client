@@ -1,6 +1,7 @@
 import { io } from "socket.io-client";
 
-const backendServer = "http://localhost:5000";
+// const backendServer = "http://localhost:5000";
+const backendServer = "https://x-o-game.herokuapp.com";
 
 const socket = io(backendServer, {
   autoConnect: false,
