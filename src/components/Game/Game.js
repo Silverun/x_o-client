@@ -34,7 +34,6 @@ const Game = () => {
   }, []);
 
   const gameEnd = useCallback(() => {
-    console.log("gameEnd ran");
     setPaused(true);
     setGameEnded(true);
   }, []);

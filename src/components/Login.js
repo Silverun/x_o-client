@@ -22,7 +22,6 @@ const Login = () => {
     }
     socket.auth = { username: name };
     socket.connect();
-
     navigate("main");
   };
 

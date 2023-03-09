@@ -12,7 +12,6 @@ const Layout = () => {
 
   const exitLobbyHandler = () => {
     socket.disconnect();
-    // localStorage.clear();
     navigate("/");
   };
   return (

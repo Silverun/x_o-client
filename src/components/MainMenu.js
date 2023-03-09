@@ -16,7 +16,6 @@ const MainMenu = () => {
 
   useEffect(() => {
     if (sessionID) {
-      console.log(sessionID, "sessionID");
       socket.auth = { sessionID };
       socket.connect();
     }
@@ -24,28 +23,19 @@ const MainMenu = () => {
       setUsers(users);
     });
     socket.on("session", ({ sessionID, userID }) => {
-      // attach the session ID to the next reconnection attempts
       socket.auth = { sessionID };
-      // store it in the localStorage
       localStorage.setItem("sessionID", sessionID);
-      // save the ID of the user
       socket.userID = userID;
     });
-    socket.on("user_connected", (newUser) => {
-      console.log("new connected user id", newUser.userID);
-    });
-    socket.on("user_disconnected", (id) => {
-      console.log("disconnected id", id);
-    });
+    socket.on("user_connected", (newUser) => {});
+    socket.on("user_disconnected", (id) => {});
     socket.on("game_invitation", ({ from, by }) => {
       setShowInvite(true);
       setInvitation({ from, by });
     });
-
     socket.on("game_accepted", () => {
       navigate(`/game/${socket.userID}`);
     });
-
     return () => {
       socket.removeAllListeners();
     };
