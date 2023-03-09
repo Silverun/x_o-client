@@ -1,36 +1,25 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import socket from "../api/io";
-import Form from "react-bootstrap/Form";
-import InputGroup from "react-bootstrap/InputGroup";
 import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
 import ListGroup from "react-bootstrap/ListGroup";
 import { useNavigate } from "react-router-dom";
 import Modal from "react-bootstrap/Modal";
+import Badge from "react-bootstrap/Badge";
 
 const MainMenu = () => {
-  const [isConnected, setIsConnected] = useState(socket.connected);
   const [users, setUsers] = useState([]);
   const [showInvite, setShowInvite] = useState(false);
   const [invitation, setInvitation] = useState({});
   const navigate = useNavigate();
-  // const { users } = useContext();
-  // const currentUserName = localStorage.getItem("user");
   const sessionID = localStorage.getItem("sessionID");
 
   useEffect(() => {
-    // console.log("Effect ran");
     if (sessionID) {
-      console.log(sessionID, "sesId Ran");
+      console.log(sessionID, "sessionID");
       socket.auth = { sessionID };
       socket.connect();
     }
-    socket.on("connect", () => {
-      setIsConnected(true);
-    });
-    socket.on("disconnect", () => {
-      setIsConnected(false);
-    });
     socket.on("users", (users) => {
       setUsers(users);
     });
@@ -43,15 +32,14 @@ const MainMenu = () => {
       socket.userID = userID;
     });
     socket.on("user_connected", (newUser) => {
-      console.log(newUser);
+      console.log("new connected user id", newUser.userID);
     });
-    // socket.on("user_disconnected", (id) => {
-    //   setUsers((prev) => prev.filter((user) => user.userID !== id));
-    // });
+    socket.on("user_disconnected", (id) => {
+      console.log("disconnected id", id);
+    });
     socket.on("game_invitation", ({ from, by }) => {
       setShowInvite(true);
       setInvitation({ from, by });
-      console.log("invited by", from);
     });
 
     socket.on("game_accepted", () => {
@@ -59,13 +47,11 @@ const MainMenu = () => {
     });
 
     return () => {
-      // console.log("unmouted listeners removed");
       socket.removeAllListeners();
     };
   }, []);
 
   const invitePlayerHandler = (id) => {
-    console.log(id);
     socket.emit("invite_player", id);
   };
 
@@ -80,7 +66,12 @@ const MainMenu = () => {
 
   return (
     <Container>
-      <Modal show={showInvite} onHide={closeInviteHandler}>
+      <Modal
+        style={{ maxWidth: 400 }}
+        className="text-center"
+        show={showInvite}
+        onHide={closeInviteHandler}
+      >
         <Modal.Body>{invitation.by} invited you for a game!</Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={closeInviteHandler}>
@@ -91,23 +82,40 @@ const MainMenu = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-
-      <h3>{isConnected ? "Online" : "Offline"}</h3>
-      <h3>Online Players</h3>
-      <ListGroup>
-        {users.map((user) => (
-          <ListGroup.Item key={user.userID}>
-            {user.username}
-            <Button
-              hidden={socket.userID === user.userID}
-              onClick={() => invitePlayerHandler(user.userID)}
-              className="ms-3"
-            >
-              Invite
-            </Button>
-          </ListGroup.Item>
-        ))}
-      </ListGroup>
+      <Container fluid="sm">
+        <h3>Players</h3>
+        <ListGroup className="mt-3">
+          {users
+            .sort((a, b) => b.connected - a.connected)
+            .map((user) => (
+              <ListGroup.Item
+                className="d-flex justify-content-between align-items-center"
+                style={{ maxWidth: "50%" }}
+                key={user.userID}
+              >
+                {user.username} {socket.userID === user.userID ? "(You)" : null}
+                {user.connected && (
+                  <Button
+                    variant="light"
+                    hidden={socket.userID === user.userID}
+                    onClick={() => invitePlayerHandler(user.userID)}
+                  >
+                    Invite to play
+                  </Button>
+                )}
+                {user.connected ? (
+                  <Badge pill bg="warning" text="dark">
+                    Online
+                  </Badge>
+                ) : (
+                  <Badge pill bg="dark">
+                    Offline
+                  </Badge>
+                )}
+              </ListGroup.Item>
+            ))}
+        </ListGroup>
+      </Container>
     </Container>
   );
 };

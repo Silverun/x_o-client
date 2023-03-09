@@ -39,38 +39,22 @@ const Game = () => {
   }, []);
 
   useEffect(() => {
-    // console.log("myID", socket.userID);
-    // console.log("name", socket);
     if (sessionID) {
       socket.auth = { sessionID };
       socket.connect();
     }
     socket.on("turn_start", (newSquares) => {
-      // console.log("newSquares", newSquares);
       setCells(newSquares);
       setYourTurn(true);
       setPaused((prev) => !prev);
       checkWinner(newSquares);
-      // checkDraw(newSquares);
     });
     socket.on("play_again_trigger", () => {
-      // setWinner(null);
-      // setCells(Array(9).fill(""));
       newGame();
     });
   }, []);
 
-  // const checkDraw = (squares) => {
-  //   const cellsFilled = squares.every((cell) => cell !== "");
-  //   console.log("winner from check draw", winner);
-  //   if (cellsFilled && !winner) {
-  //     setDraw(true);
-  //   }
-  // };
-
   const checkWinner = useCallback((squares) => {
-    // console.log(squares);
-
     let combos = {
       across: [
         [0, 1, 2],
@@ -87,31 +71,19 @@ const Game = () => {
         [2, 4, 6],
       ],
     };
-
     for (let combo in combos) {
       combos[combo].forEach((pattern) => {
-        // if (
-        //   squares[pattern[0]] === "" ||
-        //   squares[pattern[1]] === "" ||
-        //   squares[pattern[2]] === ""
-        // ) {
-        //   // do nothing no mathching rows for win
-        // } else
         let match =
           squares[pattern[0]] === squares[pattern[1]] &&
           squares[pattern[1]] === squares[pattern[2]] &&
           squares[pattern[0]] !== "";
-
         if (match) {
           winRef.current = true;
-          console.log("set winner pattern");
           setWinner(squares[pattern[0]]);
         }
       });
     }
     let cellsFilled = squares.every((cell) => cell !== "");
-    console.log("cellsFilled", cellsFilled);
-    console.log("winRef", winRef.current);
     if (!winRef.current && cellsFilled) {
       setDraw(true);
     }
@@ -119,13 +91,10 @@ const Game = () => {
 
   const handleCellClick = (num) => {
     if (winner || draw) return;
-
     if (cells[num]) {
-      // alert("already clicked");
       return;
     }
     let squares = [...cells];
-
     if (turn === "x") {
       squares[num] = "x";
     } else {
@@ -133,17 +102,13 @@ const Game = () => {
     }
     checkWinner(squares);
     setCells(squares);
-    // checkDraw(squares);
     socket.emit("turn_end", squares, gameRoom);
-
     setYourTurn(false);
     setPaused((prev) => !prev);
   };
 
   const playAgainHandler = () => {
     newGame();
-    // setWinner(null);
-    // setCells(Array(9).fill(""));
     socket.emit("play_again_click", gameRoom);
   };
 
@@ -182,7 +147,6 @@ const Game = () => {
           <h3>Playing as: {turn}</h3>
         </>
       )}
-
       <table>
         <tbody>
           <tr>
