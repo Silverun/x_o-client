@@ -15,4 +15,4 @@ This is an online multiplayer tic tac toe game featuring simple lobby where you 
 - Express
 - Socket.io
 
-[Link to deployed app]()
+[Backend repo here](https://github.com/Silverun/x_o-server)
